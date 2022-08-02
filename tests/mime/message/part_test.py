@@ -149,7 +149,7 @@ def enclosed_inner_part_no_headers_test():
     enclosed = message.parts[1].enclosed
     no_headers = enclosed.parts[0]
     assert_false(no_headers.headers)
-    no_headers.body = no_headers.body + "Mailgun!"
+    no_headers.body = f"{no_headers.body}Mailgun!"
 
     message = scan(message.to_string())
     enclosed = message.parts[1].enclosed
@@ -623,7 +623,7 @@ def test_encode_transfer_encoding():
     body = "long line " * 100
     encoded_body = _encode_transfer_encoding('base64', body)
     # according to  RFC 5322 line "SHOULD be no more than 78 characters"
-    assert_less(max([len(l) for l in encoded_body.splitlines()]), 79)
+    assert_less(max(len(l) for l in encoded_body.splitlines()), 79)
 
 
 # Test base64 decoder.

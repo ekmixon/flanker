@@ -13,7 +13,9 @@ VALID_QUOTED_PAIR = [chr(x) for x in range(0x20, 0x7e)]
 FULL_QTEXT = ''.join(VALID_QTEXT)
 FULL_QUOTED_PAIR = '\\' + '\\'.join(VALID_QUOTED_PAIR)
 
-CONTROL_CHARS = ''.join(map(six.unichr, list(range(0, 9)) + list(range(14, 32)) + [127]))
+CONTROL_CHARS = ''.join(
+    map(six.unichr, list(range(9)) + list(range(14, 32)) + [127])
+)
 
 @nottest
 def chunks(l, n):
@@ -118,7 +120,7 @@ def test_display_name():
 
         # FIXME: In Python 3 subgroup of separator symbols is treated as
         # FIXME: allowed. We need to figure out why.
-        if six.PY3 and ord(cc) in [0x1c, 0x1d, 0x1e, 0x1f]:
+        if six.PY3 and ord(cc) in {0x1C, 0x1D, 0x1E, 0x1F}:
             continue
 
         run_mailbox_test(u'"{0}" <a@b>'.format(cc), None)

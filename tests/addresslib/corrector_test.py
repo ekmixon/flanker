@@ -22,9 +22,9 @@ COMMENT = re.compile(r'''\s*#''')
 def generate_mutated_string(source_str, num):
     letters = list(source_str)
     if six.PY2:
-        rchars = string.ascii_lowercase.translate(None, source_str + '.')
+        rchars = string.ascii_lowercase.translate(None, f'{source_str}.')
     else:
-        rchars = string.ascii_lowercase.translate(source_str + '.')
+        rchars = string.ascii_lowercase.translate(f'{source_str}.')
 
     random_orig = random.sample(list(enumerate(source_str)), num)
     random_new = random.sample(list(enumerate(rchars)), num)
@@ -38,22 +38,22 @@ def generate_mutated_string(source_str, num):
 def generate_longer_string(source_str, num):
     letters = list(source_str)
     if six.PY2:
-        rchars = string.ascii_lowercase.translate(None, source_str + '.')
+        rchars = string.ascii_lowercase.translate(None, f'{source_str}.')
     else:
-        rchars = string.ascii_lowercase.translate(source_str + '.')
+        rchars = string.ascii_lowercase.translate(f'{source_str}.')
 
-    for i in range(num):
+    for _ in range(num):
         letters = [random.choice(rchars)] + letters
 
     return ''.join(letters)
 
 @nottest
 def generate_shorter_string(source_str, num):
-    return source_str[0:len(source_str)-num]
+    return source_str[:len(source_str)-num]
 
 @nottest
 def domain_generator(size=6, chars=string.ascii_letters + string.digits):
-    domain = ''.join(random.choice(chars) for x in range(size))
+    domain = ''.join(random.choice(chars) for _ in range(size))
     return ''.join([domain, '.com'])
 
 
@@ -75,8 +75,8 @@ def test_domain_typo_valid_set():
 
         parts = line.split(',')
 
-        test_str = 'username@' + parts[0]
-        corr_str = 'username@' + parts[1]
+        test_str = f'username@{parts[0]}'
+        corr_str = f'username@{parts[1]}'
         sugg_str = validate.suggest_alternate(test_str)
 
         if sugg_str == corr_str:
@@ -109,10 +109,10 @@ def test_domain_typo_invalid_set():
         if match:
             continue
 
-        test_str = 'username@' + line
+        test_str = f'username@{line}'
         sugg_str = validate.suggest_alternate(test_str)
 
-        if sugg_str == None:
+        if sugg_str is None:
             sugg_correct += 1
         else:
             print('incorrect correction: {0}, {1}'.format(test_str, sugg_str))
@@ -140,11 +140,11 @@ def test_suggest_alternate_mutations_valid():
     print('')
 
     for i in range(1, 3):
-        for j in range(100):
+        for _ in range(100):
             domain = random.choice(corrector.MOST_COMMON_DOMAINS)
-            orig_str = 'username@' + domain
+            orig_str = f'username@{domain}'
 
-            mstr = 'username@' + generate_mutated_string(domain, i)
+            mstr = f'username@{generate_mutated_string(domain, i)}'
             sugg_str = validate.suggest_alternate(mstr)
             if sugg_str == orig_str:
                 sugg_correct += 1
@@ -164,11 +164,11 @@ def test_suggest_alternate_longer_valid():
     print('')
 
     for i in range(1, 3):
-        for j in range(100):
+        for _ in range(100):
             domain = random.choice(corrector.MOST_COMMON_DOMAINS)
-            orig_str = 'username@' + domain
+            orig_str = f'username@{domain}'
 
-            lstr = 'username@' + generate_longer_string(domain, i)
+            lstr = f'username@{generate_longer_string(domain, i)}'
             sugg_str = validate.suggest_alternate(lstr)
             if sugg_str == orig_str:
                 sugg_correct += 1
@@ -188,11 +188,11 @@ def test_suggest_alternate_shorter_valid():
     print('')
 
     for i in range(1, 3):
-        for j in range(100):
+        for _ in range(100):
             domain = random.choice(corrector.MOST_COMMON_DOMAINS)
-            orig_str = 'username@' + domain
+            orig_str = f'username@{domain}'
 
-            sstr = 'username@' + generate_shorter_string(domain, i)
+            sstr = f'username@{generate_shorter_string(domain, i)}'
             sugg_str = validate.suggest_alternate(sstr)
             if sugg_str == orig_str:
                 sugg_correct += 1
@@ -212,12 +212,12 @@ def test_suggest_alternate_invalid():
     print('')
 
     for i in range(3, 10):
-        for j in range(100):
+        for _ in range(100):
             domain = domain_generator(i)
 
-            orig_str = 'username@' + domain
+            orig_str = f'username@{domain}'
             sugg_str = validate.suggest_alternate(orig_str)
-            if sugg_str == None:
+            if sugg_str is None:
                 sugg_correct += 1
             else:
                 print('did not match: {0}, {1}'.format(orig_str, sugg_str))

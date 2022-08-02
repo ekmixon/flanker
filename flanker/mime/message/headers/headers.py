@@ -21,9 +21,7 @@ class MimeHeaders(object):
 
     def __getitem__(self, key):
         v = self._v.get(normalize(key), None)
-        if v is not None:
-            return encodedword.decode(v)
-        return None
+        return encodedword.decode(v) if v is not None else None
 
     def __len__(self):
         return len(self._v)
@@ -105,9 +103,7 @@ class MimeHeaders(object):
         Returns header value (case-insensitive).
         """
         v = self._v.get(normalize(key), default)
-        if v is not None:
-            return encodedword.decode(v)
-        return None
+        return encodedword.decode(v) if v is not None else None
 
     def getraw(self, key, default=None):
         """

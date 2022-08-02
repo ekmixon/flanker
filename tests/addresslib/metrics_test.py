@@ -9,17 +9,15 @@ from flanker.addresslib import address
 
 @nottest
 def mock_exchanger_lookup(arg, metrics=False):
-    mtimes = {'mx_lookup': 10, 'dns_lookup': 20, 'mx_conn': 30}
     if metrics is True:
-        if arg == 'ai' or arg == 'mailgun.org' or arg == 'fakecompany.mailgun.org':
-            return ('', mtimes)
-        else:
-            return (None, mtimes)
-    else:
-        if arg == 'ai' or arg == 'mailgun.org' or arg == 'fakecompany.mailgun.org':
-            return ''
-        else:
-            return None
+        mtimes = {'mx_lookup': 10, 'dns_lookup': 20, 'mx_conn': 30}
+        return (
+            ('', mtimes)
+            if arg in ['ai', 'mailgun.org', 'fakecompany.mailgun.org']
+            else (None, mtimes)
+        )
+
+    return '' if arg in ['ai', 'mailgun.org', 'fakecompany.mailgun.org'] else None
 
 
 def test_metrics_parse():

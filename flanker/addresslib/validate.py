@@ -109,10 +109,7 @@ def preparse_address(addr_spec):
     """
     # sanity check, ensure we have both local-part and domain
     parts = addr_spec.split('@')
-    if len(parts) < 2:
-        return None
-
-    return parts
+    return None if len(parts) < 2 else parts
 
 
 def plugin_for_esp(mail_exchanger):
@@ -125,11 +122,14 @@ def plugin_for_esp(mail_exchanger):
     to the flanker.addresslib.plugins directory then update the
     flanker.addresslib package to add it to the known list of custom grammars.
     """
-    for grammar in _CUSTOM_GRAMMAR_LIST:
-        if grammar[0].match(mail_exchanger):
-            return grammar[1]
-
-    return None
+    return next(
+        (
+            grammar[1]
+            for grammar in _CUSTOM_GRAMMAR_LIST
+            if grammar[0].match(mail_exchanger)
+        ),
+        None,
+    )
 
 
 @metrics_wrapper()
@@ -139,12 +139,10 @@ def mail_exchanger_lookup(domain, metrics=False):
     be returned, if not it will attempt to fallback to A records, if neither
     exist None will be returned.
     """
-    mtimes = {'mx_lookup': 0, 'dns_lookup': 0, 'mx_conn': 0}
-
     # look in cache
     bstart = time.time()
     in_cache, cache_value = lookup_exchanger_in_cache(domain)
-    mtimes['mx_lookup'] = time.time() - bstart
+    mtimes = {'dns_lookup': 0, 'mx_conn': 0, 'mx_lookup': time.time() - bstart}
     if in_cache:
         return cache_value, mtimes
 
@@ -160,9 +158,9 @@ def mail_exchanger_lookup(domain, metrics=False):
             bstart = time.time()
             mx_hosts = lookup_domain(domain)
             mtimes['dns_lookup'] += time.time() - bstart
-            if mx_hosts is None:
-                log.warning('failed mx lookup for %s', domain)
-                return None, mtimes
+        if mx_hosts is None:
+            log.warning('failed mx lookup for %s', domain)
+            return None, mtimes
 
     # test connecting to the mx exchanger
     bstart = time.time()
@@ -189,10 +187,7 @@ def lookup_exchanger_in_cache(domain):
     if lookup is None:
         return (False, None)
 
-    if lookup == 'False':
-        return (True, None)
-    else:
-        return (True, lookup)
+    return (True, None) if lookup == 'False' else (True, lookup)
 
 
 def lookup_domain(domain):
@@ -209,9 +204,7 @@ def lookup_domain(domain):
     mx_hosts = _get_dns_lookup()[fqdn]
     mx_hosts = list(mx_hosts)
 
-    if len(mx_hosts) == 0:
-        return None
-    return mx_hosts
+    return mx_hosts or None
 
 
 def connect_to_mail_exchanger(mx_hosts):

@@ -31,7 +31,7 @@ def encode(name, value):
 
         return _encode_unstructured(name, value)
     except Exception:
-        _log.exception('Failed to encode %s %s' % (name, value))
+        _log.exception(f'Failed to encode {name} {value}')
         raise
 
 
@@ -62,7 +62,7 @@ def _encode_address_header(name, value):
 def _encode_parametrized(key, value, params):
     if params:
         params = [_encode_param(key, n, v) for n, v in six.iteritems(params)]
-        return value + '; ' + ('; '.join(params))
+        return f'{value}; ' + ('; '.join(params))
 
     return value
 

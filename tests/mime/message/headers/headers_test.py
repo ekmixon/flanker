@@ -28,11 +28,11 @@ def headers_order_preserved_test():
     should_be = [('Mime-Version', '1'), ('Received', '2'), ('Mime-Version', '3'), ('Received', '4')]
     eq_(should_be, h.items())
     ok_(isinstance(h.items(), list))
-    eq_(should_be, [p for p in h.iteritems()])
+    eq_(should_be, list(h.iteritems()))
 
     # iterate over keys
     keys = ['Mime-Version', 'Received', 'Mime-Version', 'Received']
-    eq_(keys, [p for p in h])
+    eq_(keys, list(h))
     eq_(keys, list(h.keys()))
 
 

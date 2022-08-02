@@ -10,8 +10,8 @@ from flanker import _email
 
 class WithParams(tuple):
 
-    def __new__(self, value, params=None):
-        return tuple.__new__(self, (value, params or {}))
+    def __new__(cls, value, params=None):
+        return tuple.__new__(cls, (value, params or {}))
 
     @property
     def value(self):
@@ -24,9 +24,8 @@ class WithParams(tuple):
 
 class ContentType(tuple):
 
-    def __new__(self, main, sub, params=None):
-        return tuple.__new__(
-            self, (main.lower() + '/' + sub.lower(), params or {}))
+    def __new__(cls, main, sub, params=None):
+        return tuple.__new__(cls, (f'{main.lower()}/{sub.lower()}', params or {}))
 
     def __init__(self, main, sub, params={}):
         self.main = main
@@ -78,7 +77,7 @@ class ContentType(tuple):
         return self == 'message/external-body'
 
     def is_message_container(self):
-        return self == 'message/rfc822' or self == 'message/global' or self == 'message/news'
+        return self in ['message/rfc822', 'message/global', 'message/news']
 
     def is_disposition_notification(self):
         return self == 'message/disposition-notification'

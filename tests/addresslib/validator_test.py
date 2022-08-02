@@ -29,9 +29,8 @@ def valid_localparts(strip_delimiters=False):
             continue
 
         # skip over localparts with delimiters
-        if strip_delimiters:
-            if ',' in line or ';' in line:
-                continue
+        if strip_delimiters and (',' in line or ';' in line):
+            continue
 
         yield line
 
@@ -50,26 +49,23 @@ def invalid_localparts(strip_delimiters=False):
             continue
 
         # skip over localparts with delimiters
-        if strip_delimiters:
-            if ',' in line or ';' in line:
-                continue
+        if strip_delimiters and (',' in line or ';' in line):
+            continue
 
         yield line
 
 
 @nottest
 def mock_exchanger_lookup(arg, metrics=False):
-    mtimes = {'mx_lookup': 10, 'dns_lookup': 20, 'mx_conn': 30}
     if metrics is True:
-        if arg in ['ai', 'mailgun.org', 'fakecompany.mailgun.org']:
-            return ('', mtimes)
-        else:
-            return (None, mtimes)
-    else:
-        if arg in ['ai', 'mailgun.org', 'fakecompany.mailgun.org']:
-            return ''
-        else:
-            return None
+        mtimes = {'mx_lookup': 10, 'dns_lookup': 20, 'mx_conn': 30}
+        return (
+            ('', mtimes)
+            if arg in ['ai', 'mailgun.org', 'fakecompany.mailgun.org']
+            else (None, mtimes)
+        )
+
+    return '' if arg in ['ai', 'mailgun.org', 'fakecompany.mailgun.org'] else None
 
 
 @nottest
@@ -78,7 +74,7 @@ def fake_dns_lookup(domain_name, lookup_results):
         # This is how `dnsq` actually returns mx_records. Emulating it in tests
         lookup_results = filter(lambda x: True, lookup_results)
 
-    fqdn = '%s.' % domain_name
+    fqdn = f'{domain_name}.'
     return {
         fqdn: lookup_results,
     }
@@ -100,17 +96,17 @@ def test_abridged_mailbox_valid_set():
         with patch.object(address, 'mail_exchanger_lookup') as mock_method:
             mock_method.side_effect = mock_exchanger_lookup
 
-            addr = line + '@ai'
+            addr = f'{line}@ai'
             mbox = address.validate_address(addr)
             assert_not_equal(mbox, None)
 
             # domain
-            addr = line + '@mailgun.org'
+            addr = f'{line}@mailgun.org'
             mbox = address.validate_address(addr)
             assert_not_equal(mbox, None)
 
             # subdomain
-            addr = line + '@fakecompany.mailgun.org'
+            addr = f'{line}@fakecompany.mailgun.org'
             mbox = address.validate_address(addr)
             assert_not_equal(mbox, None)
 
@@ -131,31 +127,37 @@ def test_abridged_mailbox_invalid_set():
         with patch.object(address, 'mail_exchanger_lookup') as mock_method:
             mock_method.side_effect = mock_exchanger_lookup
 
-            addr = line + '@ai'
+            addr = f'{line}@ai'
             mbox = address.validate_address(addr)
             assert_equal(mbox, None)
 
             # domain
-            addr = line + '@mailgun.org'
+            addr = f'{line}@mailgun.org'
             mbox = address.validate_address(addr)
             assert_equal(mbox, None)
 
             # subdomain
-            addr = line + '@fakecompany.mailgun.org'
+            addr = f'{line}@fakecompany.mailgun.org'
             mbox = address.validate_address(addr)
             assert_equal(mbox, None)
 
 
 def test_parse_syntax_only_false():
     # syntax + validation
-    valid_tld_list = [i + '@ai' for i in valid_localparts()]
-    valid_domain_list = [i + '@mailgun.org' for i in valid_localparts()]
-    valid_subdomain_list = [i + '@fakecompany.mailgun.org' for i in valid_localparts()]
+    valid_tld_list = [f'{i}@ai' for i in valid_localparts()]
+    valid_domain_list = [f'{i}@mailgun.org' for i in valid_localparts()]
+    valid_subdomain_list = [
+        f'{i}@fakecompany.mailgun.org' for i in valid_localparts()
+    ]
 
-    invalid_mx_list = [i + '@example.com' for i in valid_localparts(True)]
-    invalid_tld_list = [i + '@com' for i in invalid_localparts(True)]
-    invalid_domain_list = [i + '@example.com' for i in invalid_localparts(True)]
-    invalid_subdomain_list = [i + '@sub.example.com' for i in invalid_localparts(True)]
+
+    invalid_mx_list = [f'{i}@example.com' for i in valid_localparts(True)]
+    invalid_tld_list = [f'{i}@com' for i in invalid_localparts(True)]
+    invalid_domain_list = [f'{i}@example.com' for i in invalid_localparts(True)]
+    invalid_subdomain_list = [
+        f'{i}@sub.example.com' for i in invalid_localparts(True)
+    ]
+
 
     all_valid_list = valid_tld_list + valid_domain_list + valid_subdomain_list
     all_invalid_list = invalid_domain_list + invalid_subdomain_list + invalid_tld_list + invalid_mx_list
@@ -204,7 +206,7 @@ def test_parse_syntax_only_false():
 def test_mx_lookup(dns, cmx):
     domain_name = 'mailgun.com'
     mx_records = ['mx1.fake.mailgun.com', 'mx2.fake.mailgun.com']
-    email_address = 'username@%s' % domain_name
+    email_address = f'username@{domain_name}'
     expected_address = email_address
 
     dns.return_value = fake_dns_lookup(domain_name, mx_records)
@@ -221,7 +223,7 @@ def test_mx_lookup_has_mx_has_fallback(dns, cmx):
     # has fallback A, has MX server
     domain_name = 'domain.com'
     mx_records = ['domain.com']
-    email_address = 'username@%s' % domain_name
+    email_address = f'username@{domain_name}'
     expected_address = email_address
 
     dns.return_value = fake_dns_lookup(domain_name, mx_records)
@@ -238,7 +240,7 @@ def test_mx_lookup_has_mx_no_server_answer(dns, cmx):
     # has MX, no server answers
     domain_name = 'example.com'
     mx_records = ['mx.example.com']
-    email_address = 'username@%s' % domain_name
+    email_address = f'username@{domain_name}'
 
     dns.return_value = fake_dns_lookup(domain_name, mx_records)
     cmx.return_value = None
@@ -252,7 +254,7 @@ def test_mx_lookup_has_mx_no_server_answer(dns, cmx):
 def test_mx_lookup_has_no_mx(dns, cmx):
     # no MX
     domain_name = 'example.com'
-    email_address = 'username@%s' % domain_name
+    email_address = f'username@{domain_name}'
     dns.return_value = fake_dns_lookup(domain_name, [])
     cmx.return_value = None
 

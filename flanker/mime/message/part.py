@@ -96,14 +96,10 @@ def adjust_content_type(content_type, body=None, filename=None):
     """Adjust content type based on filename or body contents
     """
     if filename and str(content_type) == 'application/octet-stream':
-        # check if our internal guess returns anything
-        guessed = _guess_type(filename)
-        if guessed:
+        if guessed := _guess_type(filename):
             return guessed
 
-        # our internal attempt didn't return anything, use mimetypes
-        guessed = mimetypes.guess_type(filename)[0]
-        if guessed:
+        if guessed := mimetypes.guess_type(filename)[0]:
             main, sub = fix_content_type(
                 guessed, default=('application', 'octet-stream'))
             content_type = ContentType(main, sub)
@@ -113,13 +109,11 @@ def adjust_content_type(content_type, body=None, filename=None):
         if six.PY3 and isinstance(body, six.text_type):
             image_preamble = image_preamble.encode('utf-8', 'ignore')
 
-        sub = imghdr.what(None, image_preamble)
-        if sub:
+        if sub := imghdr.what(None, image_preamble):
             content_type = ContentType('image', sub)
 
     elif content_type.main == 'audio' and body:
-        sub = _email.detect_audio_type(body)
-        if sub:
+        if sub := _email.detect_audio_type(body):
             content_type = ContentType('audio', sub)
 
     return content_type
@@ -253,8 +247,7 @@ class RichPartMixin(object):
         """
         refs = list(MessageId.scan(self.headers.get('References', '')))
         if not refs:
-            reply = MessageId.from_string(self.headers.get('In-Reply-To', ''))
-            if reply:
+            if reply := MessageId.from_string(self.headers.get('In-Reply-To', '')):
                 refs.append(reply[0])
         return refs
 
@@ -273,9 +266,7 @@ class RichPartMixin(object):
         # filenames can be presented as tuples, like:
         # ('us-ascii', 'en-us', 'image.jpg')
         if isinstance(file_name, tuple) and len(file_name) == 3:
-            # encoding permissible to be empty
-            encoding = file_name[0]
-            if encoding:
+            if encoding := file_name[0]:
                 file_name = file_name[2].decode(encoding)
             else:
                 file_name = file_name[2]
@@ -301,9 +292,10 @@ class RichPartMixin(object):
                                    filename=self.detected_file_name)
 
     def is_body(self):
-        return (not self.detected_file_name and
-                (self.content_type.format_type == 'text' or
-                 self.content_type.format_type == 'message'))
+        return not self.detected_file_name and self.content_type.format_type in [
+            'text',
+            'message',
+        ]
 
     def is_root(self):
         return self._is_root
@@ -325,13 +317,10 @@ class RichPartMixin(object):
         if self.content_type.is_multipart():
             for p in self.parts:
                 yield p
-                for x in p.walk(with_self=False, skip_enclosed=skip_enclosed):
-                    yield x
-
+                yield from p.walk(with_self=False, skip_enclosed=skip_enclosed)
         elif self.content_type.is_message_container() and not skip_enclosed:
             yield self.enclosed
-            for p in self.enclosed.walk(with_self=False):
-                yield p
+            yield from self.enclosed.walk(with_self=False)
 
     def is_attachment(self):
         return self.content_disposition[0] == 'attachment'
@@ -353,7 +342,7 @@ class RichPartMixin(object):
         """
         try:
             for part in self.walk(with_self=True):
-                if part.content_type == 'message/rfc822' or part.content_type == 'message/global':
+                if part.content_type in ['message/rfc822', 'message/global']:
                     for p in part.walk():
                         return p
         except Exception:
@@ -399,15 +388,17 @@ class MimePart(RichPartMixin):
     def size(self):
         """ Returns message size in bytes"""
         if self.is_root() and not self.was_changed():
-            if isinstance(self._container, Stream):
-                return self._container.size
-            else:
-                return sum(part._container.size
-                           for part in self.walk(with_self=True))
-        else:
-            with closing(_CounterIO()) as out:
-                self.to_stream(out)
-                return out.getvalue()
+            return (
+                self._container.size
+                if isinstance(self._container, Stream)
+                else sum(
+                    part._container.size for part in self.walk(with_self=True)
+                )
+            )
+
+        with closing(_CounterIO()) as out:
+            self.to_stream(out)
+            return out.getvalue()
 
     @property
     def headers(self):
@@ -502,10 +493,7 @@ class MimePart(RichPartMixin):
             return True
 
         if self.content_type.is_singlepart():
-            if self._container.body_changed():
-                return True
-            return False
-
+            return bool(self._container.body_changed())
         elif self.content_type.is_multipart():
             return any(p.was_changed() for p in self.parts)
 
@@ -608,7 +596,7 @@ def _encode_body(part):
             content_encoding = _choose_text_encoding(charset, content_encoding,
                                                      body)
             # report which text encoding is chosen
-            metrics.incr('encoding.' + content_encoding)
+            metrics.incr(f'encoding.{content_encoding}')
         else:
             content_encoding = 'base64'
     else:
@@ -677,14 +665,7 @@ def fix_leading_dot(s):
     infp = six.BytesIO(s)
     outfp = six.BytesIO()
 
-    # TODO(thrawn01): We could scan the entire string looking for leading '.'
-    #  If none found return the original string. This would save memory at the
-    #  expense of some additional processing
-
-    dot = b"."
-    if six.PY3:
-        dot = ord('.')
-
+    dot = ord('.') if six.PY3 else b"."
     while 1:
         line = infp.readline()
         if not line:
@@ -704,7 +685,7 @@ def _quote_and_cut(ln):
     cut the line in half without dividing any quoted characters and
     conforming to the quoted-printable RFC in regards to ending characters.
     """
-    ln = quopri.quote(ln[0:1]) + ln[1:]
+    ln = quopri.quote(ln[:1]) + ln[1:]
 
     # If the line is under the 76 + '\n' character limit
     if len(ln) <= 77:
@@ -729,12 +710,8 @@ def _quote_and_cut(ln):
             c = bytes((c,))
 
         # Should be a quoted character
-        if c == b'=':
-            # Peak ahead, does the next char appear to be a hex value?
-            if quopri.ishex(ln[pos+1:pos+2]):
-                in_quote = 1
-            continue
-
+        if c == b'=' and quopri.ishex(ln[pos + 1 : pos + 2]):
+            in_quote = 1
     new_line = ln[:pos]
     next_line = ln[pos:]
 
@@ -742,33 +719,28 @@ def _quote_and_cut(ln):
     if new_line[-1:] in b' \t':
         new_line = new_line[:-1] + quopri.quote(new_line[-1:])
 
-    dot = b'.'
-    if six.PY3:
-        dot = ord('.')
-
+    dot = ord('.') if six.PY3 else b'.'
     # If the next line starts with a '.'
     if next_line[0] == dot:
-        next_line = quopri.quote(next_line[0:1]) + next_line[1:]
+        next_line = quopri.quote(next_line[:1]) + next_line[1:]
 
     return new_line + b"=\n" + next_line
 
 
 def _choose_text_encoding(charset, preferred_encoding, body):
     if charset in ('ascii', 'iso-8859-1', 'us-ascii'):
-        if has_long_lines(body):
-            return _stronger_encoding(preferred_encoding, 'quoted-printable')
-        else:
-            return preferred_encoding
-    else:
-        encoding = _stronger_encoding(preferred_encoding, 'quoted-printable')
-        return encoding
+        return (
+            _stronger_encoding(preferred_encoding, 'quoted-printable')
+            if has_long_lines(body)
+            else preferred_encoding
+        )
+
+    return _stronger_encoding(preferred_encoding, 'quoted-printable')
 
 
 def _stronger_encoding(a, b):
     weights = {'7bit': 0, 'quoted-printable': 1, 'base64': 1, '8bit': 3}
-    if weights.get(a, -1) >= weights[b]:
-        return a
-    return b
+    return a if weights.get(a, -1) >= weights[b] else b
 
 
 def has_long_lines(text, max_line_len=599):
@@ -777,12 +749,11 @@ def has_long_lines(text, max_line_len=599):
     Some SMTP servers (Exchange) refuse to accept messages 'wider' than
     certain length.
     """
-    if not text:
-        return False
-    for line in text.splitlines():
-        if len(line) >= max_line_len:
-            return True
-    return False
+    return (
+        any(len(line) >= max_line_len for line in text.splitlines())
+        if text
+        else False
+    )
 
 
 def _base64_decode(s):
@@ -827,10 +798,9 @@ _CRLF = '\r\n'
 
 # To recover base64 we need to translate the part to the base64 alphabet.
 _b64_alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-_b64_invalid_chars = ''
-for ch in range(256):
-    if chr(ch) not in _b64_alphabet:
-        _b64_invalid_chars += chr(ch)
+_b64_invalid_chars = ''.join(
+    chr(ch) for ch in range(256) if chr(ch) not in _b64_alphabet
+)
 
 
 def _recover_base64(s):
@@ -850,5 +820,5 @@ def _recover_base64(s):
         buf.write(s[chunk_start:i])
         chunk_start = i + 1
 
-    buf.write(s[chunk_start:len(s)])
+    buf.write(s[chunk_start:])
     return buf.getvalue()

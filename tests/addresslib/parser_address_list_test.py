@@ -136,7 +136,7 @@ def test_delimiters():
     # powerset
     for e in powerset('  ,,;;'):
         # empty sets will be tested by the synchronize tests
-        if ''.join(e).strip() == '':
+        if not ''.join(e).strip():
             continue
 
         addr_string = 'bill@microsoft.com' + ''.join(e) + 'steve@apple.com, torvalds@kernel.org'

@@ -35,7 +35,7 @@ class RedisCache(collections.MutableMapping):
 
     def __iter__(self):
         try:
-            return self.__value_generator__(self.r.keys(self.prefix + '*'))
+            return self.__value_generator__(self.r.keys(f'{self.prefix}*'))
         except:
             return iter([])
 

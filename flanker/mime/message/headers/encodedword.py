@@ -69,7 +69,7 @@ def mime_to_unicode(header):
             start = match.start()
             if start != 0:
                 # decodes unencoded ascii part to unicode
-                value = header[0:start]
+                value = header[:start]
                 if value.strip():
                     decoded.append((value, 'ascii'))
             # decode a header =?...?= of encoding
@@ -110,9 +110,7 @@ def _decode_part(charset, encoding, value):
         return charset, _decode_quoted_printable(value)
 
     if encoding == 'b':
-        # Postel's law: add missing padding
-        paderr = len(value) % 4
-        if paderr:
+        if paderr := len(value) % 4:
             value += '==='[:4 - paderr]
 
         return charset, _email.decode_base64(value)
@@ -120,7 +118,7 @@ def _decode_part(charset, encoding, value):
     if not encoding:
         return charset, value
 
-    raise errors.DecodingError('Unknown encoding: %s' % encoding)
+    raise errors.DecodingError(f'Unknown encoding: {encoding}')
 
 
 def _decode_quoted_printable(qp):

@@ -51,9 +51,7 @@ def cleanup_email(email):
 
 
 def contains_control_chars(s):
-    if CONTROL_CHAR_RE.match(s):
-        return True
-    return False
+    return bool(CONTROL_CHAR_RE.match(s))
 
 
 def metrics_wrapper():
@@ -67,11 +65,7 @@ def metrics_wrapper():
                 return return_value
 
             # if we have a single item
-            if len(return_value[:-1]) == 1:
-                return return_value[0]
-
-            # return all except the last value
-            return return_value[:-1]
+            return return_value[0] if len(return_value[:-1]) == 1 else return_value[:-1]
 
         return wrapper
 
@@ -79,7 +73,14 @@ def metrics_wrapper():
 
 
 # allows, \t\n\v\f\r (0x09-0x0d)
-CONTROL_CHARS = ''.join([six.unichr(c) for c in range(0, 9)] +
-                        [six.unichr(c) for c in range(14, 32)] +
-                        [six.unichr(c) for c in range(127, 160)])
-CONTROL_CHAR_RE = re.compile('[%s]' % re.escape(CONTROL_CHARS))
+CONTROL_CHARS = ''.join(
+    (
+        (
+            [six.unichr(c) for c in range(9)]
+            + [six.unichr(c) for c in range(14, 32)]
+        )
+        + [six.unichr(c) for c in range(127, 160)]
+    )
+)
+
+CONTROL_CHAR_RE = re.compile(f'[{re.escape(CONTROL_CHARS)}]')

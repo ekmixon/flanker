@@ -26,9 +26,7 @@ def suggest(word, cutoff=0.77):
         return LOOKUP_TABLE[word]
 
     guess = difflib.get_close_matches(word, MOST_COMMON_DOMAINS, n=1, cutoff=cutoff)
-    if guess and len(guess) > 0:
-        return guess[0]
-    return word
+    return guess[0] if guess and len(guess) > 0 else word
 
 MOST_COMMON_DOMAINS = [
     # mailgun :)

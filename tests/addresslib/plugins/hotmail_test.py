@@ -30,7 +30,7 @@ def test_exchanger_lookup():
     skip_if_asked()
 
     # very simple test that should fail Hotmail custom grammar
-    addr_string = '!mailgun' + DOMAIN
+    addr_string = f'!mailgun{DOMAIN}'
     addr = address.validate_address(addr_string)
     assert_equal(addr, None)
 
@@ -41,30 +41,30 @@ def test_hotmail_pass():
 
         # valid length range
         for i in range(1, 65):
-            localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
+            localpart = ''.join(random.choice(string.ascii_letters) for _ in range(i))
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # start must be letter or number
         for i in string.ascii_letters + string.digits:
-            localpart = str(i) + 'a'
+            localpart = f'{str(i)}a'
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # end must be letter or number
         for i in string.ascii_letters + string.digits + '-_':
-            localpart = 'a' + str(i)
+            localpart = f'a{str(i)}'
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # must be letter, num, period, hyphen, or underscore
         for i in string.ascii_letters + string.digits + '.-_':
-            localpart = 'a' + str(i) + '0'
+            localpart = f'a{str(i)}0'
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # only zero or one plus allowed
-        for i in range(0, 2):
+        for i in range(2):
             localpart = 'aa' + '+'*i + '00'
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
@@ -80,14 +80,14 @@ def test_hotmail_fail():
         mock_method.side_effect = mock_exchanger_lookup
 
         # invalid length range
-        for i in list(range(0, 0)) + list(range(65, 70)):
-            localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
+        for i in list(range(0)) + list(range(65, 70)):
+            localpart = ''.join(random.choice(string.ascii_letters) for _ in range(i))
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 
         # invalid start char (must start with letter)
         for i in string.punctuation:
-            localpart = str(i) + 'a'
+            localpart = f'{str(i)}a'
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 
@@ -97,7 +97,7 @@ def test_hotmail_fail():
         invalid_end_chars = invalid_end_chars.replace('_', '')
         invalid_end_chars = invalid_end_chars.replace('+', '')
         for i in invalid_end_chars:
-            localpart = 'a' + str(i)
+            localpart = f'a{str(i)}'
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 
@@ -108,7 +108,7 @@ def test_hotmail_fail():
         invalid_chars = invalid_chars.replace('_', '')
         invalid_chars = invalid_chars.replace('+', '')
         for i in invalid_chars:
-            localpart = 'a' + str(i) + '0'
+            localpart = f'a{str(i)}0'
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 

@@ -33,14 +33,10 @@ def incr(key, increment=1):
             _client.decr(key, increment)
         else:
             _client.incr(key, increment)
-    else:
-        # This hacky way of trying to initialize client, because flanker
-        # gets imported way before the application has a chance to set the
-        # environment variables for metrics.
-        if _client is None:
-            _client = False
-            init()
-            incr(key, increment)
+    elif _client is None:
+        _client = False
+        init()
+        incr(key, increment)
 
 
 @contextmanager

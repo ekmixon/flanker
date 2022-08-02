@@ -263,7 +263,7 @@ def message_headers_transform_test():
     orig = create.from_string(ENCLOSED)
 
     # When
-    orig.headers.transform(lambda k, v: ('X-{}'.format(k), v[:1]))
+    orig.headers.transform(lambda k, v: (f'X-{k}', v[:1]))
     restored = create.from_python(orig.to_python_message())
 
     # Then
@@ -352,7 +352,7 @@ def test_binary_attachment():
     message = create.from_string(ATTACHED_PDF)
 
     # When
-    parts = [p for p in message.walk(with_self=True)]
+    parts = list(message.walk(with_self=True))
 
     # Then
     def part_spec(p):

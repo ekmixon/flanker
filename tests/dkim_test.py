@@ -110,8 +110,10 @@ def canonicalize_contents(canonicalization_rule, contents):
     for header, value in headers:
         header, value = canonicalization_rule.canonicalize_header(
             header, value)
-        output.write(("%s:%s" % (header.decode('utf-8'),
-                                 value.decode('utf-8'))).encode('utf-8'))
+        output.write(
+            f"{header.decode('utf-8')}:{value.decode('utf-8')}".encode('utf-8')
+        )
+
     body = canonicalization_rule.canonicalize_body(body)
     output.write(b"\r\n")
     output.write(body)

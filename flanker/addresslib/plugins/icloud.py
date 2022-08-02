@@ -110,7 +110,4 @@ def _validate(localpart):
         if base is None:
             break
 
-    if not stream.end_of_stream():
-        return False
-
-    return True
+    return bool(stream.end_of_stream())

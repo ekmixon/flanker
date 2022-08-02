@@ -31,7 +31,7 @@ def test_exchanger_lookup():
     skip_if_asked()
 
     # very simple test that should fail Google Apps custom grammar
-    addr_string = '!mailgun' + DOMAIN
+    addr_string = f'!mailgun{DOMAIN}'
     addr = address.validate_address(addr_string)
     assert_equal(addr, None)
 
@@ -48,30 +48,30 @@ def test_google_pass():
 
         # valid length range
         for i in range(1, 65):
-            localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
+            localpart = ''.join(random.choice(string.ascii_letters) for _ in range(i))
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # start must be alphanum, underscore, dash, or apostrophe
         for i in string.ascii_letters + string.digits + '_-\'':
-            localpart = str(i) + 'aaaaa'
+            localpart = f'{str(i)}aaaaa'
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # end must be alphanum, underscore, dash, or apostrophe
         for i in string.ascii_letters + string.digits + '_-\'':
-            localpart = 'aaaaa' + str(i)
+            localpart = f'aaaaa{str(i)}'
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # must be alphanum, underscore, dash, apostrophe, dots
         for i in string.ascii_letters + string.digits + '_-\'.':
-            localpart = 'aaa' + str(i) + '000'
+            localpart = f'aaa{str(i)}000'
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # everything after plus (+) is ignored
-        for localpart in ['aa+', 'aa+tag', 'aa+tag+tag', 'aa++tag', 'aa+' + ATOM_STR]:
+        for localpart in ['aa+', 'aa+tag', 'aa+tag+tag', 'aa++tag', f'aa+{ATOM_STR}']:
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
@@ -91,7 +91,7 @@ def test_google_fail():
 
         # invalid length range
         for i in list(range(0)) + list(range(65, 80)):
-            localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
+            localpart = ''.join(random.choice(string.ascii_letters) for _ in range(i))
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 
@@ -101,7 +101,7 @@ def test_google_fail():
         invalid_chars = invalid_chars.replace('-', '')
         invalid_chars = invalid_chars.replace('\'', '')
         for i in invalid_chars:
-            localpart = str(i) + 'aaaaa'
+            localpart = f'{str(i)}aaaaa'
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 
@@ -112,7 +112,7 @@ def test_google_fail():
         invalid_chars = invalid_chars.replace('\'', '')
         invalid_chars = invalid_chars.replace('+', '')
         for i in invalid_chars:
-            localpart = 'aaaaa' + str(i)
+            localpart = f'aaaaa{str(i)}'
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 
@@ -124,16 +124,16 @@ def test_google_fail():
         invalid_chars = invalid_chars.replace('.', '')
         invalid_chars = invalid_chars.replace('+', '')
         for i in invalid_chars:
-            localpart = 'aaa' + str(i) + '000'
+            localpart = f'aaa{str(i)}000'
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 
         # dots (.) are NOT ignored
-        addr1 = address.validate_address('aa..aa' + DOMAIN)
-        addr2 = address.validate_address('aa.aa' + DOMAIN)
+        addr1 = address.validate_address(f'aa..aa{DOMAIN}')
+        addr2 = address.validate_address(f'aa.aa{DOMAIN}')
         assert_not_equal(addr1, addr2)
 
         # everything after plus (+) is ignored, but something must be infront of it
-        for localpart in ['+t1', '+' + ATOM_STR]:
+        for localpart in ['+t1', f'+{ATOM_STR}']:
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)

@@ -59,7 +59,7 @@ if six.PY2:
                r')')
 
     _UTF8_4 = (r'(\xF0[\x90-\xBF][\x80-\xBF]{2}'
-    
+
                r'|[\xF1-\xF3][\x80-\xBF]{3}'
                r'|\xF4[\x80-\x8F][\x80-\xBF]{2}'
                r')')
@@ -75,7 +75,7 @@ else:
                r'|[\U00100000-\U0010ffff]'
                r')')
 
-_UNICODE_CHAR = '({}|{}|{})'.format(_UTF8_2, _UTF8_3, _UTF8_4)
+_UNICODE_CHAR = f'({_UTF8_2}|{_UTF8_3}|{_UTF8_4})'
 
 
 t_ATOM = r'''

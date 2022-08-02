@@ -6,13 +6,13 @@ _tabversion = '3.10'
 _lr_method = 'LALR'
 
 _lr_signature = 'addr_specFWSP AT DOT COMMA SEMICOLON LANGLE RANGLE ATOM DOT_ATOM LBRACKET RBRACKET DTEXT DQUOTE QTEXT QPAIR LPAREN RPAREN CTEXT URLmailbox_or_url_list : mailbox_or_url_list delim mailbox_or_url\n                           | mailbox_or_url_list delim\n                           | mailbox_or_urldelim : delim fwsp COMMA\n             | delim fwsp SEMICOLON\n             | COMMA\n             | SEMICOLONmailbox_or_url : mailbox\n                      | urlurl : ofwsp URL ofwspmailbox : addr_spec\n               | angle_addr\n               | name_addrname_addr : ofwsp phrase angle_addrangle_addr : ofwsp LANGLE addr_spec RANGLE ofwspaddr_spec : ofwsp local_part AT domain ofwsplocal_part : DOT_ATOM\n                  | ATOM\n                  | quoted_stringdomain : DOT_ATOM\n              | ATOM\n              | domain_literalquoted_string : DQUOTE quoted_string_text DQUOTE\n                     | DQUOTE DQUOTEquoted_string_text : quoted_string_text QTEXT\n                          | quoted_string_text QPAIR\n                          | quoted_string_text fwsp\n                          | QTEXT\n                          | QPAIR\n                          | fwspdomain_literal : LBRACKET domain_literal_text RBRACKET\n                      | LBRACKET RBRACKETdomain_literal_text : domain_literal_text DTEXT\n                           | domain_literal_text fwsp\n                           | DTEXT\n                           | fwspcomment : LPAREN comment_text RPAREN\n               | LPAREN RPARENcomment_text : comment_text CTEXT\n                    | comment_text fwsp\n                    | CTEXT\n                    | fwspphrase : phrase fwsp ATOM\n              | phrase fwsp DOT_ATOM\n              | phrase fwsp DOT\n              | phrase fwsp quoted_string\n              | phrase ATOM\n              | phrase DOT_ATOM\n              | phrase DOT\n              | phrase quoted_string\n              | ATOM\n              | DOT_ATOM\n              | DOT\n              | quoted_stringofwsp : fwsp comment fwsp\n             | fwsp comment\n             | comment fwsp\n             | comment\n             | fwsp\n             |fwsp : FWSP'
-    
+
 _lr_action_items = {'FWSP':([0,2,4,6,7,10,14,15,16,17,20,21,22,24,25,26,27,28,29,30,31,32,33,34,35,38,39,40,41,42,43,44,],[4,4,-61,4,4,4,-42,4,-38,-41,-30,-29,-28,4,-40,-37,-39,4,4,-20,-21,-22,-27,-26,-25,-36,-35,4,-32,-34,-33,-31,]),'QPAIR':([4,10,20,21,22,24,33,34,35,],[-61,21,-30,-29,-28,34,-27,-26,-25,]),'QTEXT':([4,10,20,21,22,24,33,34,35,],[-61,22,-30,-29,-28,35,-27,-26,-25,]),'DTEXT':([4,29,38,39,40,42,43,],[-61,39,-36,-35,43,-34,-33,]),'DQUOTE':([0,1,2,3,4,7,8,10,16,18,20,21,22,24,26,33,34,35,],[-60,-59,-58,10,-61,-56,-57,23,-38,-55,-30,-29,-28,36,-37,-27,-26,-25,]),'LBRACKET':([19,],[29,]),'DOT_ATOM':([0,1,2,3,4,7,8,16,18,19,26,],[-60,-59,-58,11,-61,-56,-57,-38,-55,30,-37,]),'AT':([9,11,12,13,23,36,],[19,-17,-18,-19,-24,-23,]),'LPAREN':([0,1,4,28,30,31,32,41,44,],[6,6,-61,6,-20,-21,-22,-32,-31,]),'ATOM':([0,1,2,3,4,7,8,16,18,19,26,],[-60,-59,-58,12,-61,-56,-57,-38,-55,31,-37,]),'RPAREN':([4,6,14,15,17,25,27,],[-61,16,-42,26,-41,-40,-39,]),'RBRACKET':([4,29,38,39,40,42,43,],[-61,41,-36,-35,44,-34,-33,]),'CTEXT':([4,6,14,15,17,25,27,],[-61,17,-42,27,-41,-40,-39,]),'$end':([1,2,4,5,7,8,16,18,26,28,30,31,32,37,41,44,],[-59,-58,-61,0,-56,-57,-38,-55,-37,-60,-20,-21,-22,-16,-32,-31,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
    for _x,_y in zip(_v[0],_v[1]):
-      if not _x in _lr_action:  _lr_action[_x] = {}
+      if _x not in _lr_action:  _lr_action[_x] = {}
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
@@ -21,8 +21,8 @@ _lr_goto_items = {'fwsp':([0,2,6,7,10,15,24,28,29,40,],[1,8,14,18,20,25,33,1,38,
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
    for _x, _y in zip(_v[0], _v[1]):
-       if not _x in _lr_goto: _lr_goto[_x] = {}
-       _lr_goto[_x][_k] = _y
+      if _x not in _lr_goto: _lr_goto[_x] = {}
+      _lr_goto[_x][_k] = _y
 del _lr_goto_items
 _lr_productions = [
   ("S' -> addr_spec","S'",1,None,None,None),

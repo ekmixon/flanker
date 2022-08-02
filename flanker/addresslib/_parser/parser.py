@@ -75,7 +75,7 @@ def p_expression_quoted_string(p):
     '''quoted_string : DQUOTE quoted_string_text DQUOTE
                      | DQUOTE DQUOTE'''
     if len(p) == 4:
-        p[0] = '"{}"'.format(p[2])
+        p[0] = f'"{p[2]}"'
     elif len(p) == 3:
         p[0] = '""'
 
@@ -92,7 +92,7 @@ def p_expression_domain_literal(p):
     '''domain_literal : LBRACKET domain_literal_text RBRACKET
                       | LBRACKET RBRACKET'''
     if len(p) == 4:
-        p[0] = '[{}]'.format(p[2])
+        p[0] = f'[{p[2]}]'
     elif len(p) == 3:
         p[0] = '[]'
 
@@ -129,9 +129,9 @@ def p_expression_phrase(p):
               | DOT
               | quoted_string'''
     if len(p) == 4:
-        p[0] = '{} {}'.format(p[1], p[3])
+        p[0] = f'{p[1]} {p[3]}'
     if len(p) == 3:
-        p[0] = '{}{}'.format(p[1], p[2])
+        p[0] = f'{p[1]}{p[2]}'
     elif len(p) == 2:
         p[0] = p[1]
 
@@ -150,7 +150,7 @@ def p_expression_fwsp(p):
 
 def p_error(p):
     if p:
-        raise SyntaxError('syntax error: token=%s, lexpos=%s' % (p.value, p.lexpos))
+        raise SyntaxError(f'syntax error: token={p.value}, lexpos={p.lexpos}')
     raise SyntaxError('syntax error: eof')
 
 
@@ -191,20 +191,18 @@ if __name__ == '__main__':
     while True:
         try:
             s = raw_input('\nflanker> ')
-        except KeyboardInterrupt:
-            break
-        except EOFError:
+        except (KeyboardInterrupt, EOFError):
             break
         if s == '': continue
 
         print('\nTokens list:\n')
         lexer.input(s)
         while True:
-            tok = lexer.token()
-            if not tok:
-                break
-            print(tok)
+            if tok := lexer.token():
+                print(tok)
 
+            else:
+                break
         print('\nParsing behavior:\n')
         result = mailbox_or_url_list_parser.parse(s, debug=log)
 

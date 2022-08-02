@@ -57,18 +57,17 @@ def _collect_headers(message):
 def _collect_headers_from_status(body):
     out = deque()
     with closing(six.StringIO(body)) as stream:
-        for i in range(3):
+        for _ in range(3):
             out += parse_stream(stream)
 
     return out
 
 
 def _get_status(headers):
-    for v in headers.getall('Status'):
-        if _RE_STATUS.match(v.strip()):
-            return v
-
-    return u''
+    return next(
+        (v for v in headers.getall('Status') if _RE_STATUS.match(v.strip())),
+        u'',
+    )
 
 
 def _get_notification(message):

@@ -24,10 +24,11 @@ class FallbackMimePart(RichPartMixin):
 
     @property
     def size(self):
-        if not self._m.is_multipart():
-            return len(self._m.get_payload(decode=False))
-        else:
-            return sum(p.size for p in self.parts)
+        return (
+            sum(p.size for p in self.parts)
+            if self._m.is_multipart()
+            else len(self._m.get_payload(decode=False))
+        )
 
     @property
     def headers(self):
@@ -111,7 +112,7 @@ class FallbackMimePart(RichPartMixin):
 
     @property
     def enclosed(self):
-        if self.content_type == 'message/rfc822' or self.content_type == 'message/global':
+        if self.content_type in ['message/rfc822', 'message/global']:
             return FallbackMimePart(self._m.get_payload()[0])
 
     def enclose(self, message):
@@ -180,4 +181,4 @@ def _try_decode(key, value):
     if isinstance(value, six.text_type):
         return value
 
-    raise TypeError('%s is not allowed type of header %s' % (type(value), key))
+    raise TypeError(f'{type(value)} is not allowed type of header {key}')

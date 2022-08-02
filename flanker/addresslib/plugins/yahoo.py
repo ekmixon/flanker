@@ -127,10 +127,7 @@ def _validate_primary(email_addr):
             break
 
     # alpha or numeric must be end of stream
-    if not stream.end_of_stream():
-        return False
-
-    return True
+    return bool(stream.end_of_stream())
 
 def _validate_disposable(email_addr):
     # Setup for handling EmailAddress type instead of literal string
@@ -176,10 +173,7 @@ def _validate_disposable(email_addr):
     # keyword must be alpha, num
     stream.get_token(ALPHANUM)
 
-    if not stream.end_of_stream():
-        return False
-
-    return True
+    return bool(stream.end_of_stream())
 
 
 def managed_email(hostname):

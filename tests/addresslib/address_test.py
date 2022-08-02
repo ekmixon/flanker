@@ -38,9 +38,7 @@ def test_address_compare():
     ok_(u == "http://hello.com")
 
     # make sure it works for sets:
-    s = set()
-    s.add(a)
-    s.add(also_a)
+    s = {a, also_a}
     eq_(1, len(s))
     s.add(u)
     s.add(u)
@@ -48,10 +46,10 @@ def test_address_compare():
 
     # test string comparison
     ok_(a == a.address)
-    ok_(not (a != a.address))
+    ok_(a == a.address)
 
     ok_(b != a.address)
-    ok_(not (b == a.address))
+    ok_(b != a.address)
 
 
 def test_local_url():

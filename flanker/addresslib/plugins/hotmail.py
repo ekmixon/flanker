@@ -83,12 +83,7 @@ def validate(email_addr):
         return False
 
     # no more than one plus (+)
-    if localpart.count('+') > 1:
-        return False
-
-    # grammar check
-    retval = _validate(real_localpart)
-    return retval
+    return False if localpart.count('+') > 1 else _validate(real_localpart)
 
 
 def _validate(localpart):
@@ -102,17 +97,11 @@ def _validate(localpart):
     # optional tags
     tgs = _tags(stream)
 
-    if not stream.end_of_stream():
-        return False
-
-    return True
+    return bool(stream.end_of_stream())
 
 
 def _tags(stream):
     pls = stream.get_token(PLUS)
     bse = stream.get_token(HOTMAIL_BASE)
 
-    if bse and pls is None:
-        return False
-
-    return True
+    return not bse or pls is not None

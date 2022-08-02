@@ -93,11 +93,7 @@ def parse(address, addr_spec_only=False, strict=False, metrics=False):
         None
     """
     mtimes = {'parsing': 0}
-    if addr_spec_only:
-        parser = addr_spec_parser
-    else:
-        parser = mailbox_or_url_parser
-
+    parser = addr_spec_parser if addr_spec_only else mailbox_or_url_parser
     address = _to_parser_input(address)
 
     # sanity checks
@@ -234,9 +230,7 @@ def parse_list(address_list, strict=False, as_tuple=False, metrics=False):
                     parsed.append(addr_obj)
                 else:
                     unparsed.append(address)
-            elif isinstance(address, EmailAddress):
-                parsed.append(address)
-            elif isinstance(address, UrlAddress):
+            elif isinstance(address, (EmailAddress, UrlAddress)):
                 parsed.append(address)
             else:
                 unparsed.append(address)
@@ -370,22 +364,18 @@ def validate_list(addr_list, as_tuple=False, metrics=False, skip_remote_checks=F
     # validate each address
     for paddr in parsed_addresses:
         vaddr, metrics = validate_address(paddr.address, metrics=True, skip_remote_checks=skip_remote_checks)
-        for k in mtimes.keys():
-            mtimes[k] += metrics[k]
+        for k, v in mtimes.items():
+            v += metrics[k]
         if vaddr is None:
             ulist.append(paddr.full_spec())
         else:
             plist.append(paddr)
 
-    if as_tuple:
-        return plist, ulist, mtimes
-    return plist, mtimes
+    return (plist, ulist, mtimes) if as_tuple else (plist, mtimes)
 
 
 def is_email(string):
-    if parse(string, True):
-        return True
-    return False
+    return bool(parse(string, True))
 
 
 class Address(object):
@@ -522,14 +512,13 @@ class EmailAddress(Address):
 
     @property
     def address(self):
-        return u'{}@{}'.format(self._mailbox, self._hostname)
+        return f'{self._mailbox}@{self._hostname}'
 
     @property
     def ace_address(self):
         if not is_pure_ascii(self._mailbox):
-            raise ValueError('Address {} has no ASCII-compatable encoding'
-                             .format(self.address))
-        return _to_str('{}@{}'.format(self._mailbox, self.ace_hostname))
+            raise ValueError(f'Address {self.address} has no ASCII-compatable encoding')
+        return _to_str(f'{self._mailbox}@{self.ace_hostname}')
 
     @property
     def supports_routing(self):
@@ -549,9 +538,8 @@ class EmailAddress(Address):
 
     def to_unicode(self):
         if self._display_name:
-            return u'{} <{}@{}>'.format(smart_quote(self._display_name),
-                                        self._mailbox, self._hostname)
-        return u'{}@{}'.format(self._mailbox, self._hostname)
+            return f'{smart_quote(self._display_name)} <{self._mailbox}@{self._hostname}>'
+        return f'{self._mailbox}@{self._hostname}'
 
     def full_spec(self):
         """
@@ -566,10 +554,11 @@ class EmailAddress(Address):
            '=?utf-8?b?0JbQtdC60LA=?= <ev@example.com>'
         """
         ace_address = self.ace_address
-        if not self.display_name:
-            return self.ace_address
-
-        return '{} <{}>'.format(self.ace_display_name, ace_address)
+        return (
+            f'{self.ace_display_name} <{ace_address}>'
+            if self.display_name
+            else self.ace_address
+        )
 
     def contains_non_ascii(self):
         """
@@ -605,9 +594,7 @@ class EmailAddress(Address):
         """
         if isinstance(other, six.string_types):
             other = parse(other)
-        if other:
-            return self.address.lower() == other.address.lower()
-        return False
+        return self.address.lower() == other.address.lower() if other else False
 
     def __ne__(self, other):
         """
@@ -674,11 +661,7 @@ class UrlAddress(Address):
 
     @property
     def hostname(self):
-        hostname = self._address.hostname
-        if hostname:
-            return hostname.lower()
-        else:
-            return None
+        return hostname.lower() if (hostname := self._address.hostname) else None
 
     @property
     def port(self):
@@ -710,9 +693,7 @@ class UrlAddress(Address):
     def __eq__(self, other):
         if isinstance(other, six.string_types):
             other = parse(other)
-        if other:
-            return self.address == other.address
-        return False
+        return self.address == other.address if other else False
 
     def __hash__(self):
         return hash(self.address)
@@ -746,7 +727,7 @@ class AddressList(object):
 
     def append(self, addr):
         if not isinstance(addr, Address):
-            raise TypeError('Unexpected type %s' % type(addr))
+            raise TypeError(f'Unexpected type {type(addr)}')
         self._container.append(addr)
 
     def remove(self, addr):
@@ -768,7 +749,7 @@ class AddressList(object):
         if isinstance(other, (list, six.binary_type, six.text_type)):
             other = parse_list(other)
         if not isinstance(other, AddressList):
-            raise TypeError('Cannot compare with %s' % type(other))
+            raise TypeError(f'Cannot compare with {type(other)}')
         return set(self._container) == set(other._container)
 
     def __repr__(self):
@@ -788,7 +769,7 @@ class AddressList(object):
             other = parse_list(other)
 
         if not isinstance(other, AddressList):
-            raise TypeError('Cannot add %s' % type(other))
+            raise TypeError(f'Cannot add {type(other)}')
 
         container = self._container + other._container
         addr_lst = AddressList()
@@ -826,14 +807,14 @@ class AddressList(object):
         """
         Returns a set of hostnames used in addresses in this list.
         """
-        return set([addr.hostname for addr in self._container])
+        return {addr.hostname for addr in self._container}
 
     @property
     def addr_types(self):
         """
         Returns a set of address types used in addresses in this list.
         """
-        return set([addr.addr_type for addr in self._container])
+        return {addr.addr_type for addr in self._container}
 
 
 def _lift_parse_result(parse_rs):
@@ -843,7 +824,7 @@ def _lift_parse_result(parse_rs):
                 _display_name=smart_unquote(_to_text(parse_rs.display_name)),
                 _mailbox=_to_text(parse_rs.local_part),
                 _hostname=_to_text(parse_rs.domain))
-        except (UnicodeError, IDNAError):
+        except UnicodeError:
             return None
 
     if isinstance(parse_rs, Url):
@@ -859,8 +840,7 @@ def _lift_parse_list_result(parse_list_rs):
         addr_obj = _lift_parse_result(parse_rs)
         if not addr_obj:
             if isinstance(parse_rs, Mailbox):
-                bad_list.append(u'%s@%s' % (_to_text(parse_rs.local_part),
-                                            _to_text(parse_rs.domain)))
+                bad_list.append(f'{_to_text(parse_rs.local_part)}@{_to_text(parse_rs.domain)}')
             continue
 
         addr_list_obj.append(addr_obj)
@@ -869,10 +849,7 @@ def _lift_parse_list_result(parse_list_rs):
 
 
 def _parse_list_result(as_tuple, parsed, unparsed, mtimes):
-    if as_tuple:
-        return parsed, unparsed, mtimes
-
-    return parsed, mtimes
+    return (parsed, unparsed, mtimes) if as_tuple else (parsed, mtimes)
 
 
 def _to_parser_input(parser_in):
@@ -885,14 +862,18 @@ def _to_parser_input(parser_in):
     if six.PY2:
         if isinstance(parser_in, six.text_type):
             parser_in = parser_in.encode('utf-8')
-        assert isinstance(parser_in, six.binary_type), (
-            'Expected %s, got %s' % (six.binary_type, type(parser_in)))
+        assert isinstance(
+            parser_in, six.binary_type
+        ), f'Expected {six.binary_type}, got {type(parser_in)}'
+
         return parser_in
 
     if isinstance(parser_in, six.binary_type):
         parser_in = parser_in.decode('utf-8')
-    assert isinstance(parser_in, six.text_type), (
-        'Expected %s, got %s' % (six.text_type, type(parser_in)))
+    assert isinstance(
+        parser_in, six.text_type
+    ), f'Expected {six.text_type}, got {type(parser_in)}'
+
     return parser_in
 
 
@@ -909,7 +890,7 @@ def _to_text(val):
     if isinstance(val, six.text_type):
         return val
 
-    raise TypeError('String type expected, got %s' % type(val))
+    raise TypeError(f'String type expected, got {type(val)}')
 
 
 def _to_str(val):
@@ -923,7 +904,4 @@ def _to_str(val):
     if isinstance(val, str):
         return val
 
-    if six.PY2:
-        return val.encode('utf-8')
-
-    return val.decode('utf-8')
+    return val.encode('utf-8') if six.PY2 else val.decode('utf-8')

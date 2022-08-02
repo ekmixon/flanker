@@ -72,11 +72,7 @@ def validate(email_addr):
         return False
 
     # must end with letter or digit
-    if ALPHANUM.match(localpart[-1]) is None:
-        return False
-
-    # grammar check
-    return _validate(localpart)
+    return False if ALPHANUM.match(localpart[-1]) is None else _validate(localpart)
 
 
 def _validate(localpart):
@@ -98,10 +94,7 @@ def _validate(localpart):
             break
 
     # alpha or numeric must be end of stream
-    if not stream.end_of_stream():
-        return False
-
-    return True
+    return bool(stream.end_of_stream())
 
 
 def unmanaged_email(hostname):

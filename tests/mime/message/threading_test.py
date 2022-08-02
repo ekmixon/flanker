@@ -73,10 +73,7 @@ def test_container_children():
 def test_container_find_and_iter_children():
     c = Container()
     eq_(None, c.last_child)
-    collected = []
-    for child in c.iter_children():
-        collected.append(child)
-
+    collected = list(c.iter_children())
     eq_([], collected)
     assert_false(c.has_descendant(None))
     assert_false(c.has_descendant(c))
@@ -91,9 +88,7 @@ def test_container_find_and_iter_children():
     eq_(c2, c.last_child)
     ok_(c.has_descendant(c2))
 
-    collected = []
-    for child in c.iter_children():
-        collected.append(child)
+    collected = list(c.iter_children())
     eq_([c1,c2], collected)
 
     c3, c4, c5, c6 = make_empty(4)
@@ -721,7 +716,7 @@ def test_build_root_set():
 
 
 def make_empty(count):
-    return [Container() for i in range(count)]
+    return [Container() for _ in range(count)]
 
 def make_full(*ids):
     return [tc(id) for id in ids]

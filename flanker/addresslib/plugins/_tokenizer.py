@@ -36,18 +36,12 @@ class TokenStream(object):
                 return token
             return None
 
-        # match a pattern
-        match = token.match(self.stream, self.position)
-        if match:
+        if match := token.match(self.stream, self.position):
             advance = match.end() - match.start()
             self.position += advance
 
             # if we are asking for a named capture, return jus that
-            if ngroup:
-                return match.group(ngroup)
-            # otherwise return the entire capture
-            return match.group()
-
+            return match.group(ngroup) if ngroup else match.group()
         return None
 
     def end_of_stream(self):
@@ -55,24 +49,15 @@ class TokenStream(object):
         Check if the end of the stream has been reached, if it has, returns
         True, otherwise false.
         """
-        if self.position >= len(self.stream):
-            return True
-        return False
+        return self.position >= len(self.stream)
 
     def peek(self, token=None):
         """
         Peek at the stream to see what the next token is or peek for a
         specific token.
         """
-        # peek at whats next in the stream
         if token is None:
-            if self.position < len(self.stream):
-                return self.stream[self.position]
-            else:
-                return None
-        # peek for a specific token
-        else:
-            match = token.match(self.stream, self.position)
-            if match:
-                return self.stream[match.start():match.end()]
-            return None
+            return self.stream[self.position] if self.position < len(self.stream) else None
+        if match := token.match(self.stream, self.position):
+            return self.stream[match.start():match.end()]
+        return None

@@ -276,10 +276,10 @@ def print_tree(part, parts, delimiters=""):
 
     if part.content_type.is_multipart():
         for p in part.parts:
-            print_tree(p, parts, delimiters + "-")
+            print_tree(p, parts, f"{delimiters}-")
 
     elif part.content_type.is_message_container():
-        print_tree(part.enclosed, parts, delimiters + "-")
+        print_tree(part.enclosed, parts, f"{delimiters}-")
 
 
 

@@ -6,13 +6,13 @@ _tabversion = '3.10'
 _lr_method = 'LALR'
 
 _lr_signature = 'mailboxFWSP AT DOT COMMA SEMICOLON LANGLE RANGLE ATOM DOT_ATOM LBRACKET RBRACKET DTEXT DQUOTE QTEXT QPAIR LPAREN RPAREN CTEXT URLmailbox_or_url_list : mailbox_or_url_list delim mailbox_or_url\n                           | mailbox_or_url_list delim\n                           | mailbox_or_urldelim : delim fwsp COMMA\n             | delim fwsp SEMICOLON\n             | COMMA\n             | SEMICOLONmailbox_or_url : mailbox\n                      | urlurl : ofwsp URL ofwspmailbox : addr_spec\n               | angle_addr\n               | name_addrname_addr : ofwsp phrase angle_addrangle_addr : ofwsp LANGLE addr_spec RANGLE ofwspaddr_spec : ofwsp local_part AT domain ofwsplocal_part : DOT_ATOM\n                  | ATOM\n                  | quoted_stringdomain : DOT_ATOM\n              | ATOM\n              | domain_literalquoted_string : DQUOTE quoted_string_text DQUOTE\n                     | DQUOTE DQUOTEquoted_string_text : quoted_string_text QTEXT\n                          | quoted_string_text QPAIR\n                          | quoted_string_text fwsp\n                          | QTEXT\n                          | QPAIR\n                          | fwspdomain_literal : LBRACKET domain_literal_text RBRACKET\n                      | LBRACKET RBRACKETdomain_literal_text : domain_literal_text DTEXT\n                           | domain_literal_text fwsp\n                           | DTEXT\n                           | fwspcomment : LPAREN comment_text RPAREN\n               | LPAREN RPARENcomment_text : comment_text CTEXT\n                    | comment_text fwsp\n                    | CTEXT\n                    | fwspphrase : phrase fwsp ATOM\n              | phrase fwsp DOT_ATOM\n              | phrase fwsp DOT\n              | phrase fwsp quoted_string\n              | phrase ATOM\n              | phrase DOT_ATOM\n              | phrase DOT\n              | phrase quoted_string\n              | ATOM\n              | DOT_ATOM\n              | DOT\n              | quoted_stringofwsp : fwsp comment fwsp\n             | fwsp comment\n             | comment fwsp\n             | comment\n             | fwsp\n             |fwsp : FWSP'
-    
+
 _lr_action_items = {'FWSP':([0,2,6,9,10,12,14,15,16,17,18,19,20,21,22,23,28,29,30,31,32,36,37,38,39,40,41,42,46,47,48,49,50,51,52,53,54,55,56,57,58,59,62,63,64,65,66,67,68,],[6,6,-61,6,6,6,-51,6,-52,6,-54,-53,-42,6,-38,-41,-30,-29,-28,-24,6,-48,-47,-50,-49,-40,-37,-39,6,6,6,-20,-21,-22,-27,-26,-25,-23,-44,-43,-46,-45,-36,-35,6,-32,-34,-33,-31,]),'LANGLE':([0,1,2,4,6,10,11,14,16,17,18,19,22,24,31,33,34,36,37,38,39,41,55,56,57,58,59,],[-60,-59,-58,12,-61,-56,-57,-51,-52,-60,-54,-53,-38,-55,-24,-59,12,-48,-47,-50,-49,-37,-23,-44,-43,-46,-45,]),'RPAREN':([6,9,20,21,23,40,42,],[-61,22,-42,41,-41,-40,-39,]),'QTEXT':([6,15,28,29,30,32,52,53,54,],[-61,30,-30,-29,-28,54,-27,-26,-25,]),'DTEXT':([6,48,62,63,64,66,67,],[-61,63,-36,-35,67,-34,-33,]),'DQUOTE':([0,1,2,4,6,10,11,12,14,15,16,17,18,19,22,24,25,28,29,30,31,32,33,36,37,38,39,41,52,53,54,55,56,57,58,59,],[-60,-59,-58,15,-61,-56,-57,-60,-51,31,-52,15,-54,-53,-38,-55,15,-30,-29,-28,-24,55,15,-48,-47,-50,-49,-37,-27,-26,-25,-23,-44,-43,-46,-45,]),'LBRACKET':([27,],[48,]),'QPAIR':([6,15,28,29,30,32,52,53,54,],[-61,29,-30,-29,-28,53,-27,-26,-25,]),'DOT_ATOM':([0,1,2,4,6,10,11,12,14,16,17,18,19,22,24,25,27,31,33,36,37,38,39,41,55,56,57,58,59,],[-60,-59,-58,16,-61,-56,-57,-60,-51,-52,36,-54,-53,-38,-55,43,49,-24,56,-48,-47,-50,-49,-37,-23,-44,-43,-46,-45,]),'AT':([13,14,16,18,31,43,44,45,55,],[27,-18,-17,-19,-24,-17,-18,-19,-23,]),'LPAREN':([0,1,6,12,14,16,17,18,19,31,33,36,37,38,39,46,47,49,50,51,55,56,57,58,59,65,68,],[9,9,-61,9,-51,-52,9,-54,-53,-24,9,-48,-47,-50,-49,9,9,-20,-21,-22,-23,-44,-43,-46,-45,-32,-31,]),'ATOM':([0,1,2,4,6,10,11,12,14,16,17,18,19,22,24,25,27,31,33,36,37,38,39,41,55,56,57,58,59,],[-60,-59,-58,14,-61,-56,-57,-60,-51,-52,37,-54,-53,-38,-55,44,50,-24,57,-48,-47,-50,-49,-37,-23,-44,-43,-46,-45,]),'RANGLE':([1,2,6,10,11,22,24,26,41,47,49,50,51,61,65,68,],[-59,-58,-61,-56,-57,-38,-55,46,-37,-60,-20,-21,-22,-16,-32,-31,]),'RBRACKET':([6,48,62,63,64,66,67,],[-61,65,-36,-35,68,-34,-33,]),'CTEXT':([6,9,20,21,23,40,42,],[-61,23,-42,42,-41,-40,-39,]),'DOT':([0,1,2,4,6,10,11,14,16,17,18,19,22,24,31,33,36,37,38,39,41,55,56,57,58,59,],[-60,-59,-58,19,-61,-56,-57,-51,-52,39,-54,-53,-38,-55,-24,59,-48,-47,-50,-49,-37,-23,-44,-43,-46,-45,]),'$end':([1,2,3,5,6,7,8,10,11,22,24,35,41,46,47,49,50,51,60,61,65,68,],[-59,-58,-13,-12,-61,0,-11,-56,-57,-38,-55,-14,-37,-60,-60,-20,-21,-22,-15,-16,-32,-31,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
    for _x,_y in zip(_v[0],_v[1]):
-      if not _x in _lr_action:  _lr_action[_x] = {}
+      if _x not in _lr_action:  _lr_action[_x] = {}
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
@@ -21,8 +21,8 @@ _lr_goto_items = {'fwsp':([0,2,9,10,12,15,17,21,32,46,47,48,64,],[1,11,20,24,1,2
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
    for _x, _y in zip(_v[0], _v[1]):
-       if not _x in _lr_goto: _lr_goto[_x] = {}
-       _lr_goto[_x][_k] = _y
+      if _x not in _lr_goto: _lr_goto[_x] = {}
+      _lr_goto[_x][_k] = _y
 del _lr_goto_items
 _lr_productions = [
   ("S' -> mailbox","S'",1,None,None,None),

@@ -180,9 +180,9 @@ class Container(object):
                 next_ = container.next
                 self.remove_child(container)
                 container = next_
-            elif container.is_dummy \
-                 and container.has_children \
-                 and (not container.in_root_set or container.has_one_child):
+            elif container.is_dummy and (
+                not container.in_root_set or container.has_one_child
+            ):
                 # remove container from the list
                 # replacing it with it's children
                 next_ = container.child

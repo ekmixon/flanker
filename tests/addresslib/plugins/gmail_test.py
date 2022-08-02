@@ -31,7 +31,7 @@ def test_exchanger_lookup():
     skip_if_asked()
 
     # very simple test that should fail Gmail custom grammar
-    addr_string = '!mailgun' + DOMAIN
+    addr_string = f'!mailgun{DOMAIN}'
     addr = address.validate_address(addr_string)
     assert_equal(addr, None)
 
@@ -42,25 +42,25 @@ def test_gmail_pass():
 
         # valid length range
         for i in range(6, 31):
-            localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
+            localpart = ''.join(random.choice(string.ascii_letters) for _ in range(i))
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # start must be letter or num
         for i in string.ascii_letters + string.digits:
-            localpart = str(i) + 'aaaaa'
+            localpart = f'{str(i)}aaaaa'
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # end must be letter or number
         for i in string.ascii_letters + string.digits:
-            localpart = 'aaaaa' + str(i)
+            localpart = f'aaaaa{str(i)}'
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
         # must be letter, num, or dots
         for i in string.ascii_letters + string.digits + '.':
-            localpart = 'aaa' + str(i) + '000'
+            localpart = f'aaa{str(i)}000'
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
@@ -70,7 +70,7 @@ def test_gmail_pass():
             assert_not_equal(addr, None)
 
         # everything after plus (+) is ignored
-        for localpart in ['aaaaaa+', 'aaaaaa+tag', 'aaaaaa+tag+tag','aaaaaa++tag', 'aaaaaa+' + ATOM_STR]:
+        for localpart in ['aaaaaa+', 'aaaaaa+tag', 'aaaaaa+tag+tag', 'aaaaaa++tag', f'aaaaaa+{ATOM_STR}']:
             addr = address.validate_address(localpart + DOMAIN)
             assert_not_equal(addr, None)
 
@@ -80,20 +80,20 @@ def test_gmail_fail():
         mock_method.side_effect = mock_exchanger_lookup
 
         # invalid length range
-        for i in list(range(0, 6)) + list(range(31, 40)):
-            localpart = ''.join(random.choice(string.ascii_letters) for x in range(i))
+        for i in list(range(6)) + list(range(31, 40)):
+            localpart = ''.join(random.choice(string.ascii_letters) for _ in range(i))
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 
         # invalid start char (must start with letter)
         for i in string.punctuation:
-            localpart = str(i) + 'aaaaa'
+            localpart = f'{str(i)}aaaaa'
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 
         # invalid end char (must end with letter or digit)
         for i in string.punctuation:
-            localpart = 'aaaaa' + str(i)
+            localpart = f'aaaaa{str(i)}'
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 
@@ -101,7 +101,7 @@ def test_gmail_fail():
         invalid_chars = string.punctuation
         invalid_chars = invalid_chars.replace('.', '')
         for i in invalid_chars:
-            localpart = 'aaa' + str(i) + '000'
+            localpart = f'aaa{str(i)}000'
             addr = address.validate_address(localpart + DOMAIN)
             assert_equal(addr, None)
 

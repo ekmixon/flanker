@@ -34,17 +34,15 @@ def smart_unquote(s):
         if is_quoted_section:
             if escaped_char:
                 escaped_char = False
-            else:
-                if c == '"':
-                    is_quoted_section = False
-                    continue
-                elif c == '\\':
-                    escaped_char = True
-                    continue
-        else:
-            if c == '"':
-                is_quoted_section = True
+            elif c == '\\':
+                escaped_char = True
                 continue
+            elif c == '"':
+                is_quoted_section = False
+                continue
+        elif c == '"':
+            is_quoted_section = True
+            continue
 
         unquoted.write(c)
 

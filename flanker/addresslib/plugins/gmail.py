@@ -60,7 +60,6 @@ def validate(email_addr):
     l = len(stripped_localpart)
     if l < 6 or l > 30:
         return False
-
    # must start with letter or num
     if ALPHANUM.match(real_localpart[0]) is None:
         return False
@@ -87,19 +86,12 @@ def _validate(localpart):
     # optional tags
     tgs = _tags(stream)
 
-    if not stream.end_of_stream():
-        return False
-
-    return True
+    return bool(stream.end_of_stream())
 
 
 def _tags(stream):
     while True:
-        # plus sign
-        pls = stream.get_token(PLUS)
-
-        # optional atom
-        if pls:
+        if pls := stream.get_token(PLUS):
             stream.get_token(ATOM)
         else:
             break

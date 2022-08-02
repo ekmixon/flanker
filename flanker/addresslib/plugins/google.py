@@ -77,19 +77,18 @@ def validate(email_addr):
 
     # if only one character, must be alphanum, underscore (_), or apostrophe (')
     if len(localpart) == 1 or l == 1:
-        if ALPHANUM.match(localpart) or UNDERSCORE.match(localpart) or \
-            APOSTROPHE.match(localpart):
-            return True
+        return bool(
+            ALPHANUM.match(localpart)
+            or UNDERSCORE.match(localpart)
+            or APOSTROPHE.match(localpart)
+        )
+
+    if len(real_localpart) <= 0:
         return False
 
-    # must start with: alphanum, underscore (_), dash (-), or apostrophe(')
-    if len(real_localpart) > 0:
-        if not ALPHANUM.match(real_localpart[0]) and not UNDERSCORE.match(real_localpart[0]) \
-            and not DASH.match(real_localpart[0]) and not APOSTROPHE.match(real_localpart[0]):
-            return False
-    else:
+    if not ALPHANUM.match(real_localpart[0]) and not UNDERSCORE.match(real_localpart[0]) \
+        and not DASH.match(real_localpart[0]) and not APOSTROPHE.match(real_localpart[0]):
         return False
-
     # must end with: alphanum, underscore(_), dash(-), or apostrophe(')
     if not ALPHANUM.match(real_localpart[-1]) and not UNDERSCORE.match(real_localpart[-1]) \
         and not DASH.match(real_localpart[-1]) and not APOSTROPHE.match(real_localpart[-1]):
@@ -109,19 +108,12 @@ def _validate(localpart):
     # optional tags
     tgs = _tags(stream)
 
-    if not stream.end_of_stream():
-        return False
-
-    return True
+    return bool(stream.end_of_stream())
 
 
 def _tags(stream):
     while True:
-        # plus sign
-        pls = stream.get_token(PLUS)
-
-        # optional atom
-        if pls:
+        if pls := stream.get_token(PLUS):
             stream.get_token(ATOM)
         else:
             break

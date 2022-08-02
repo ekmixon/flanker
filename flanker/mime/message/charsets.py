@@ -28,8 +28,4 @@ def _ensure_charset(charset):
     except LookupError:
         pass
 
-    charset = _ALIASES.get(charset)
-    if charset:
-        return charset
-
-    return 'utf-8'
+    return charset if (charset := _ALIASES.get(charset)) else 'utf-8'
